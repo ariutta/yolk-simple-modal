@@ -1,0 +1,33 @@
+{
+  "name": "mithril-simple-modal",
+  "version": "0.0.0",
+  "description": "Mithril wrapper for wunderlink/simple-modal.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ariutta/mithril-simple-modal.git"
+  },
+  "keywords": [
+    "mithril",
+    "modal",
+    "lightbox",
+    "light-box",
+    "simple-modal"
+  ],
+  "author": "Anders Riutta",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/ariutta/mithril-simple-modal/issues"
+  },
+  "homepage": "https://github.com/ariutta/mithril-simple-modal",
+  "dependencies": {
+    "mithril": "^0.2.0",
+    "rx": "^2.5.3"
+  },
+  "devDependencies": {
+    "workflow-bob": "git://github.com/ariutta/workflow-bob.git"
+  }
+}
