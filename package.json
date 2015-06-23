@@ -25,10 +25,11 @@
   "homepage": "https://github.com/ariutta/mithril-simple-modal",
   "dependencies": {
     "mithril": "^0.2.0",
-    "rx": "^2.5.3",
-    "simple-modal": "^1.0.1"
+    "simple-modal": "^1.0.1",
+    "spin.js": "^2.0.2"
   },
   "devDependencies": {
+    "rx": "^2.5.3",
     "workflow-bob": "git://github.com/ariutta/workflow-bob.git"
   }
 }
