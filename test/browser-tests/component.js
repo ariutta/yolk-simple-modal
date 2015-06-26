@@ -99,7 +99,7 @@ demo.vm = (function() {
         window.setTimeout(function() {
           console.log('  timeout');
           return cb(null, value);
-        }, 3500);
+        }, 1500);
       })();
     })
     .subscribe(function(buttonId) {
