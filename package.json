@@ -4,7 +4,9 @@
   "description": "Mithril wrapper for wunderlink/simple-modal.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "node ./scripts/postinstall.js",
+    "oldpostinstall": "node ./node_modules/browserify/bin/cmd.js ./node_modules/simple-modal/lib/index.coffee > ./node_modules/simple-modal/lib/bundle.js",
+    "test": "node ./node_modules/mocha/bin/mocha ./test/unit/api.js"
   },
   "repository": {
     "type": "git",
@@ -24,12 +26,21 @@
   },
   "homepage": "https://github.com/ariutta/mithril-simple-modal",
   "dependencies": {
-    "mithril": "^0.2.0",
+    "browserify": "^12.0.1",
+    "coffeeify": "^2.0.1",
+    "cssify": "^1.0.1",
+    "jade": "^1.11.0",
+    "jade-runtime": "^2.0.0",
+    "jadeify": "^4.5.0",
+    "mithril": "^0.2.1",
     "simple-modal": "^1.0.1",
     "spin.js": "^2.0.2"
   },
   "devDependencies": {
-    "rx": "^2.5.3",
-    "workflow-bob": "git://github.com/ariutta/workflow-bob.git"
+    "chai": "^3.4.1",
+    "jsdom": "^7.2.1",
+    "mocha": "^2.3.4",
+    "mocha-jsdom": "^1.0.0",
+    "rx": "^2.5.3"
   }
 }
