@@ -5,24 +5,11 @@ describe('mocha tests', function() {
 
   jsdom();
 
-  it('has document', function() {
-
-    var mSimpleModal = require('../../index.js');
-
-    console.log('mSimpleModal');
-    console.log(mSimpleModal);
-
-    var div = document.createElement('div');
-    expect(div.nodeName).eql('DIV');
-  });
-
-  it('has document', function() {
+  it('displays modal', function(testDone) {
 
     var m = require('mithril');
     var Rx = require('Rx');
     var mSimpleModal = require('../../index.js');
-    console.log('mSimpleModal');
-    console.log(mSimpleModal);
 
     /**********************
      * Modal content (body)
@@ -59,11 +46,13 @@ describe('mocha tests', function() {
 
     //for simplicity, we use this component to namespace the model classes
 
-    demo.vm = (function() {
+    demo.vm = (function(done) {
       var vm = {};
 
       vm.init = function() {
+
         vm.xrefs = m.prop([]);
+        vm.showXrefs = true;
 
         var syncButton = document.querySelector('#sync-button');
         var clickSource = Rx.Observable.fromEvent(syncButton, 'click');
@@ -85,7 +74,6 @@ describe('mocha tests', function() {
             return target.id || target.getAttribute('id');
           })
           .partition(function(id) {
-            console.log('  partition');
             return !!id;
           });
 
@@ -98,6 +86,7 @@ describe('mocha tests', function() {
           m.redraw();
         }, function(err) {
           console.log('  buttonIdSource onError');
+          throw err;
         }, function() {
           console.log('  buttonIdSource onComplete');
         });
@@ -108,9 +97,23 @@ describe('mocha tests', function() {
           m.redraw();
         }, function(err) {
           console.log('  resetSource onError');
+          throw err;
         }, function() {
           console.log('  resetSource onComplete');
         });
+
+        vm.mockClick = function(value) {
+          vm.xrefs([{
+            displayName: 'displayName1',
+            db: 'db1',
+            identifier: 'identifier1' + new Date().toISOString(),
+          }, {
+            displayName: 'displayName2',
+            db: 'db2',
+            identifier: 'identifier2',
+          }]);
+          m.redraw();
+        };
 
         buttonIdSource.flatMap(function(value) {
           if (value === 'sync-button') {
@@ -137,6 +140,7 @@ describe('mocha tests', function() {
           m.redraw();
         }, function(err) {
           console.log('  buttonIdSource2 onError');
+          throw err;
         }, function() {
           console.log('  buttonIdSource2 onComplete');
         });
@@ -173,6 +177,8 @@ describe('mocha tests', function() {
           if (!demo.vm.showXrefs) {
             return;
           }
+
+          demo.vm.mockClick();
 
           var content;
           var xrefs = demo.vm.xrefs();
@@ -230,9 +236,17 @@ describe('mocha tests', function() {
     document.body.appendChild(noIdButton);
 
     //initialize the application
-    m.render(document.querySelector('#demo'), {controller: demo.controller, view: demo.view});
+    m.mount(document.querySelector('#demo'), {controller: demo.controller, view: demo.view});
 
+    console.log('document.body.innerHTML before');
+    console.log(document.body.innerHTML);
     expect(document.querySelector('#button-id').nodeName).eql('DIV');
+    window.setTimeout(function() {
+      console.log('document.body.innerHTML after');
+      console.log(document.body.innerHTML);
+      expect(document.querySelector('.simple-modal-content').nodeName).eql('DIV');
+      testDone();
+    }, 500);
   });
 
 });
