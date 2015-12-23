@@ -1,15 +1,26 @@
 var jsdom = require('mocha-jsdom');
 var expect = require('chai').expect;
 
-describe('mocha tests', function() {
+function expectIsVisible(el) {
+  expect(el.style.visibility).satisfy(function(value) {
+    return value === '' || value === 'visible';
+  });
+  expect(el.hidden).satisfy(function(value) {
+    return value === false || typeof value === 'undefined';
+  });
+}
+
+describe('api tests', function() {
+
+  var m;
+  var mSimpleModal;
 
   jsdom();
 
-  it('displays modal', function(testDone) {
+  before(function() {
 
-    var m = require('mithril');
-    var Rx = require('Rx');
-    var mSimpleModal = require('../../index.js');
+    m = require('mithril');
+    mSimpleModal = require('../../index.js');
 
     /**********************
      * Modal content (body)
@@ -51,114 +62,19 @@ describe('mocha tests', function() {
 
       vm.init = function() {
 
-        vm.xrefs = m.prop([]);
         vm.showXrefs = true;
-
-        var syncButton = document.querySelector('#sync-button');
-        var clickSource = Rx.Observable.fromEvent(syncButton, 'click');
-
-        var asyncButton = document.querySelector('#async-button');
-        var asyncClickSource = Rx.Observable.fromEvent(asyncButton, 'click');
-
-        var noIdButton = document.querySelector('.no-id-button');
-        var noIdClickSource = Rx.Observable.fromEvent(noIdButton, 'click');
+        vm.xrefs = m.prop([{
+          displayName: 'displayName1',
+          db: 'db1',
+          identifier: 'identifier1',
+        }, {
+          displayName: 'displayName2',
+          db: 'db2',
+          identifier: 'identifier2',
+        }]);
 
         vm.selectionValue = m.prop('');
-
-        // Button ID
         vm.buttonId = m.prop('');
-        var buttonIdAndResetSource = Rx.Observable.merge(
-            clickSource, asyncClickSource, noIdClickSource)
-          .map(function(e) {
-            var target = e.target;
-            return target.id || target.getAttribute('id');
-          })
-          .partition(function(id) {
-            return !!id;
-          });
-
-        var buttonIdSource = buttonIdAndResetSource[0];
-        var resetSource = buttonIdAndResetSource[1];
-
-        buttonIdSource.subscribe(function(buttonId) {
-          vm.buttonId(buttonId);
-          vm.showXrefs = true;
-          m.redraw();
-        }, function(err) {
-          console.log('  buttonIdSource onError');
-          throw err;
-        }, function() {
-          console.log('  buttonIdSource onComplete');
-        });
-
-        resetSource.subscribe(function(x, i, o) {
-          vm.buttonId('');
-          vm.selectionValue('');
-          m.redraw();
-        }, function(err) {
-          console.log('  resetSource onError');
-          throw err;
-        }, function() {
-          console.log('  resetSource onComplete');
-        });
-
-        vm.mockClick = function(value) {
-          vm.xrefs([{
-            displayName: 'displayName1',
-            db: 'db1',
-            identifier: 'identifier1' + new Date().toISOString(),
-          }, {
-            displayName: 'displayName2',
-            db: 'db2',
-            identifier: 'identifier2',
-          }]);
-          m.redraw();
-        };
-
-        buttonIdSource.flatMap(function(value) {
-          if (value === 'sync-button') {
-            return Rx.Observable.just(value);
-          }
-
-          return Rx.Observable.fromNodeCallback(function(cb) {
-            window.setTimeout(function() {
-              console.log('  timeout');
-              return cb(null, value);
-            }, 1500);
-          })();
-        })
-        .subscribe(function(buttonId) {
-          vm.xrefs([{
-            displayName: 'displayName1',
-            db: 'db1',
-            identifier: 'identifier1' + new Date().toISOString(),
-          }, {
-            displayName: 'displayName2',
-            db: 'db2',
-            identifier: 'identifier2',
-          }]);
-          m.redraw();
-        }, function(err) {
-          console.log('  buttonIdSource2 onError');
-          throw err;
-        }, function() {
-          console.log('  buttonIdSource2 onComplete');
-        });
-
-        vm.closeAndSave = function(value) {
-          console.log('saving...');
-          console.log('value');
-          console.log(value);
-          vm.showXrefs = false;
-          vm.xrefs = m.prop([]);
-          vm.selectionValue(value);
-        };
-
-        vm.cancel = function() {
-          console.log('canceled.');
-          vm.showXrefs = false;
-          vm.xrefs = m.prop([]);
-        };
       };
 
       return vm;
@@ -170,15 +86,12 @@ describe('mocha tests', function() {
 
     demo.view = function(ctrl) {
       return m('div', {}, [
-        m('div#button-id', {}, 'Button ID: ' + demo.vm.buttonId()),
-        m('div', {}, 'Selection Value: ' + demo.vm.selectionValue()),
+        m('div#selection-value', {}, 'Selection Value: ' + demo.vm.selectionValue()),
         (function() {
 
           if (!demo.vm.showXrefs) {
             return;
           }
-
-          demo.vm.mockClick();
 
           var content;
           var xrefs = demo.vm.xrefs();
@@ -214,39 +127,52 @@ describe('mocha tests', function() {
     container.setAttribute('id', 'demo');
     document.body.appendChild(container);
 
-    var syncButton = document.createElement('button');
-    syncButton.setAttribute('id', 'sync-button');
-    syncButton.setAttribute('type', 'submit');
-    syncButton.setAttribute('action', '#');
-    syncButton.textContent = 'Open Modal (Sync Source)';
-    document.body.appendChild(syncButton);
-
-    var asyncButton = document.createElement('button');
-    asyncButton.setAttribute('id', 'async-button');
-    asyncButton.setAttribute('type', 'submit');
-    asyncButton.setAttribute('action', '#');
-    asyncButton.textContent = 'Open Modal (Async Source)';
-    document.body.appendChild(asyncButton);
-
-    var noIdButton = document.createElement('button');
-    noIdButton.setAttribute('class', 'no-id-button');
-    noIdButton.setAttribute('type', 'submit');
-    noIdButton.setAttribute('action', '#');
-    noIdButton.textContent = 'No ID (Will Reset)';
-    document.body.appendChild(noIdButton);
-
     //initialize the application
     m.mount(document.querySelector('#demo'), {controller: demo.controller, view: demo.view});
+  });
 
-    console.log('document.body.innerHTML before');
-    console.log(document.body.innerHTML);
-    expect(document.querySelector('#button-id').nodeName).eql('DIV');
-    window.setTimeout(function() {
-      console.log('document.body.innerHTML after');
-      console.log(document.body.innerHTML);
-      expect(document.querySelector('.simple-modal-content').nodeName).eql('DIV');
-      testDone();
-    }, 500);
+  it('displays non-modal content in background', function() {
+    var selectionValueEl = document.querySelector('#selection-value');
+    expectIsVisible(selectionValueEl);
+
+    var overlayEl = document.querySelector('.simple-modal-overlay');
+    expectIsVisible(overlayEl);
+  });
+
+  var modalContainerEl;
+  it('displays modal container', function() {
+    modalContainerEl = document.querySelector('.simple-modal-holder');
+    expectIsVisible(modalContainerEl);
+  });
+
+  var modalBodyEl;
+  it('displays modal body', function() {
+    modalBodyEl = modalContainerEl.querySelector('.simple-modal-body');
+    expectIsVisible(modalBodyEl);
+  });
+
+  it('displays modal title as requested', function() {
+    var modalTitleEl = modalBodyEl.querySelector('.simple-modal-title');
+    expectIsVisible(modalTitleEl);
+    expect(modalTitleEl.textContent).eql('Click a row to select an xref');
+  });
+
+  it('displays modal content as requested', function() {
+    var modalContentEl = modalBodyEl.querySelector('.simple-modal-content');
+    expectIsVisible(modalContentEl);
+
+    var firstTableCell = modalBodyEl.querySelector('td');
+    expectIsVisible(firstTableCell);
+    expect(firstTableCell.textContent).eql('displayName1');
+  });
+
+  it('displays modal controls as requested', function() {
+    var modalControlsEl = modalBodyEl.querySelector('.simple-modal-controls');
+    expectIsVisible(modalControlsEl);
+
+    var cancelButton = modalControlsEl.querySelector('button');
+    expectIsVisible(cancelButton);
+    expect(cancelButton.textContent).eql('Cancel');
   });
 
 });
