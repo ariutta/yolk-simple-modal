@@ -7,7 +7,7 @@
     "compile": "node ./node_modules/browserify/bin/cmd.js ./index.js > ./test/lib/mithril-simple-modal/dev/mithril-simple-modal.bundle.js",
     "postinstall": "node ./node_modules/browserify/bin/cmd.js ./node_modules/simple-modal/index.js --standalone createSimpleModal | ./node_modules/derequire/bin/cmd.js > ./node_modules/simple-modal/simple-modal.compiled.js",
     "start": "./node_modules/http-server/bin/http-server",
-    "test": "node ./node_modules/mocha/bin/mocha ./test/unit/api.js"
+    "test": "node ./node_modules/mocha/bin/mocha ./test/unit/sync.js && node ./node_modules/mocha/bin/mocha ./test/unit/async.js"
   },
   "repository": {
     "type": "git",

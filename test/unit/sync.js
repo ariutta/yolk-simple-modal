@@ -1,24 +1,27 @@
 var jsdom = require('mocha-jsdom');
 var expect = require('chai').expect;
 
-function expectIsVisible(el) {
-  expect(el.style.visibility).satisfy(function(value) {
-    return value === '' || value === 'visible';
-  });
-  expect(el.hidden).satisfy(function(value) {
-    return value === false || typeof value === 'undefined';
-  });
+function getShownStatus(el) {
+  var hidden = el.hidden;
+
+  var style = getComputedStyle(el);
+  visibility = style.visibility;
+  display = style.display;
+
+  return (hidden !== 'true') &&
+          (visibility === '' || visibility === 'visible') &&
+          (display !== 'none');
 }
 
-describe('api tests', function() {
+describe('sync tests', function() {
+
+  jsdom();
 
   var m;
   var mSimpleModal;
 
-  jsdom();
-
   before(function() {
-
+    document.body.innerHTML = '';
     m = require('mithril');
     mSimpleModal = require('../../index.js');
 
@@ -133,45 +136,45 @@ describe('api tests', function() {
 
   it('displays non-modal content in background', function() {
     var selectionValueEl = document.querySelector('#selection-value');
-    expectIsVisible(selectionValueEl);
+    expect(getShownStatus(selectionValueEl)).to.be.true;
 
     var overlayEl = document.querySelector('.simple-modal-overlay');
-    expectIsVisible(overlayEl);
+    expect(getShownStatus(overlayEl)).to.be.true;
   });
 
   var modalContainerEl;
   it('displays modal container', function() {
     modalContainerEl = document.querySelector('.simple-modal-holder');
-    expectIsVisible(modalContainerEl);
+    expect(getShownStatus(modalContainerEl)).to.be.true;
   });
 
   var modalBodyEl;
   it('displays modal body', function() {
     modalBodyEl = modalContainerEl.querySelector('.simple-modal-body');
-    expectIsVisible(modalBodyEl);
+    expect(getShownStatus(modalBodyEl)).to.be.true;
   });
 
   it('displays modal title as requested', function() {
     var modalTitleEl = modalBodyEl.querySelector('.simple-modal-title');
-    expectIsVisible(modalTitleEl);
+    expect(getShownStatus(modalTitleEl)).to.be.true;
     expect(modalTitleEl.textContent).eql('Click a row to select an xref');
   });
 
   it('displays modal content as requested', function() {
     var modalContentEl = modalBodyEl.querySelector('.simple-modal-content');
-    expectIsVisible(modalContentEl);
+    expect(getShownStatus(modalContentEl)).to.be.true;
 
     var firstTableCell = modalBodyEl.querySelector('td');
-    expectIsVisible(firstTableCell);
+    expect(getShownStatus(firstTableCell)).to.be.true;
     expect(firstTableCell.textContent).eql('displayName1');
   });
 
   it('displays modal controls as requested', function() {
     var modalControlsEl = modalBodyEl.querySelector('.simple-modal-controls');
-    expectIsVisible(modalControlsEl);
+    expect(getShownStatus(modalControlsEl)).to.be.true;
 
     var cancelButton = modalControlsEl.querySelector('button');
-    expectIsVisible(cancelButton);
+    expect(getShownStatus(cancelButton)).to.be.true;
     expect(cancelButton.textContent).eql('Cancel');
   });
 
