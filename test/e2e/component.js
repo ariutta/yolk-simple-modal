@@ -56,6 +56,7 @@ demo.vm = (function() {
 
     // Button ID
     vm.buttonId = m.prop('');
+
     var buttonIdAndResetSource = Rx.Observable.merge(
         clickSource, asyncClickSource, noIdClickSource)
       .map(function(e) {
@@ -64,21 +65,13 @@ demo.vm = (function() {
       })
       .partition(function(id) {
         console.log('  partition');
+        console.log('id');
+        console.log(id);
         return !!id;
       });
 
     var buttonIdSource = buttonIdAndResetSource[0];
     var resetSource = buttonIdAndResetSource[1];
-
-    buttonIdSource.subscribe(function(buttonId) {
-      vm.buttonId(buttonId);
-      vm.showXrefs = true;
-      m.redraw();
-    }, function(err) {
-      console.log('  buttonIdSource onError');
-    }, function() {
-      console.log('  buttonIdSource onComplete');
-    });
 
     resetSource.subscribe(function(x, i, o) {
       vm.buttonId('');
@@ -88,33 +81,55 @@ demo.vm = (function() {
       console.log('  resetSource onError');
     }, function() {
       console.log('  resetSource onComplete');
+      throw err;
     });
 
     buttonIdSource.flatMap(function(value) {
+      vm.showXrefs = true;
+      vm.buttonId(value);
+
       if (value === 'sync-button') {
+        vm.xrefs([{
+          displayName: 'displayName1',
+          db: 'db1',
+          identifier: 'identifier1' + new Date().toISOString(),
+        }, {
+          displayName: 'displayName2',
+          db: 'db2',
+          identifier: 'identifier2',
+        }]);
+
+        m.redraw();
+
         return Rx.Observable.just(value);
       }
+
+      m.redraw();
 
       return Rx.Observable.fromNodeCallback(function(cb) {
         window.setTimeout(function() {
           console.log('  timeout');
+          vm.xrefs([{
+            displayName: 'displayName1',
+            db: 'db1',
+            identifier: 'identifier1' + new Date().toISOString(),
+          }, {
+            displayName: 'displayName2',
+            db: 'db2',
+            identifier: 'identifier2',
+          }]);
+          console.log('redrawing now...');
+          m.redraw();
           return cb(null, value);
         }, 1500);
       })();
     })
     .subscribe(function(buttonId) {
-      vm.xrefs([{
-        displayName: 'displayName1',
-        db: 'db1',
-        identifier: 'identifier1' + new Date().toISOString(),
-      }, {
-        displayName: 'displayName2',
-        db: 'db2',
-        identifier: 'identifier2',
-      }]);
-      m.redraw();
+      console.log('buttonId on subscribe');
+      console.log(buttonId);
     }, function(err) {
       console.log('  buttonIdSource2 onError');
+      throw err;
     }, function() {
       console.log('  buttonIdSource2 onComplete');
     });
