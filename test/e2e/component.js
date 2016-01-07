@@ -19,7 +19,7 @@ modalContent.view = function() {
     m('tbody', {}, [
       demo.vm.xrefs().map(function(xref, index) {
         return m('tr[style="cursor: pointer;"]', {
-          onclick: m.withAttr('textContent', mSimpleModal.wrapClose(demo.vm.closeAndSave))
+          onclick: m.withAttr('textContent', demo.vm.closeAndSave)
         }, [
           m('td', {}, xref.displayName),
           m('td', {}, xref.db),
@@ -42,6 +42,20 @@ demo.vm = (function() {
 
   vm.init = function() {
     vm.xrefs = m.prop([]);
+    vm.showXrefs = m.prop(false);
+
+    vm.modalStatus = function() {
+      if (vm.showXrefs()) {
+        var xrefs = vm.xrefs();
+        if (xrefs && xrefs.length > 0) {
+          return 'open';
+        } else {
+          return 'loading';
+        }
+      } else {
+        return 'closed';
+      }
+    };
 
     var syncButton = document.querySelector('#sync-button');
     var clickSource = Rx.Observable.fromEvent(syncButton, 'click');
@@ -85,7 +99,7 @@ demo.vm = (function() {
     });
 
     buttonIdSource.flatMap(function(value) {
-      vm.showXrefs = true;
+      vm.showXrefs(true);
       vm.buttonId(value);
 
       if (value === 'sync-button') {
@@ -138,15 +152,15 @@ demo.vm = (function() {
       console.log('saving...');
       console.log('value');
       console.log(value);
-      vm.showXrefs = false;
-      vm.xrefs = m.prop([]);
+      vm.showXrefs(false);
+      vm.xrefs([]);
       vm.selectionValue(value);
     };
 
     vm.cancel = function() {
       console.log('canceled.');
-      vm.showXrefs = false;
-      vm.xrefs = m.prop([]);
+      vm.showXrefs(false);
+      vm.xrefs([]);
     };
   };
   return vm;
@@ -157,40 +171,28 @@ demo.controller = function() {
 };
 
 demo.view = function(ctrl) {
+  var vm = demo.vm;
   return m('div', {}, [
-    m('div', {}, 'Button ID: ' + demo.vm.buttonId()),
-    m('div', {}, 'Selection Value: ' + demo.vm.selectionValue()),
+    m('div', {}, 'Button ID: ' + vm.buttonId()),
+    m('div', {}, 'Selection Value: ' + vm.selectionValue()),
     (function() {
-
-      if (!demo.vm.showXrefs) {
-        return;
-      }
-
-      var content;
-      var xrefs = demo.vm.xrefs();
-      if (!!xrefs && xrefs.length > 0) {
-        content = modalContent;
-      }
-
-      return m.component(mSimpleModal.component, {
+      return m.component(mSimpleModal, {
         title: 'Click a row to select an xref',
         // NOTE we can pass in the content as any one of the following:
         // 1) an HTML string,
         // 2) a mithril component
         // 3) a template in the mithril m(...) syntax
-        //
-        // If using 2 or 3 and you add any events that should close the modal,
-        // be sure to wrap each event handler with mSimpleModal.wrapClose(...)
-        content: content,
+        content: modalContent,
         buttons: [{
           text: 'Cancel',
           closeOnClick: true,
-          callback: demo.vm.cancel
+          callback: vm.cancel
         }],
         onchange: function(value) {
           console.log('value');
           console.log(value);
-        }
+        },
+        status: vm.modalStatus()
       });
     })()
   ]);

@@ -4,7 +4,6 @@
   "description": "Mithril wrapper for wunderlink/simple-modal.",
   "main": "index.js",
   "scripts": {
-    "compile": "node ./node_modules/browserify/bin/cmd.js ./index.js > ./test/lib/mithril-simple-modal/dev/mithril-simple-modal.bundle.js",
     "postinstall": "node ./node_modules/browserify/bin/cmd.js ./node_modules/simple-modal/index.js --standalone createSimpleModal | ./node_modules/derequire/bin/cmd.js > ./node_modules/simple-modal/simple-modal.compiled.js",
     "start": "./node_modules/http-server/bin/http-server",
     "test": "node ./node_modules/mocha/bin/mocha ./test/unit/sync.js && node ./node_modules/mocha/bin/mocha ./test/unit/async.js"
@@ -31,6 +30,7 @@
     "coffeeify": "^2.0.1",
     "cssify": "^1.0.1",
     "derequire": "^2.0.3",
+    "isvisible": "^1.0.6",
     "jade": "^1.11.0",
     "jade-runtime": "^2.0.0",
     "jadeify": "^4.5.0",
@@ -41,6 +41,7 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "http-server": "^0.8.5",
+    "jquery": "^1.11.3",
     "jsdom": "^7.2.1",
     "mocha": "^2.3.4",
     "mocha-jsdom": "^1.0.0",

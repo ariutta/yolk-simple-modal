@@ -5,13 +5,13 @@
 Create dir `./test/lib/mithril-simple-modal/dev`
 
 ```bash
-npm compile
+node ./node_modules/browserify/bin/cmd.js ./index.js > ./test/lib/mithril-simple-modal/dev/mithril-simple-modal.bundle.js
 ```
 
 ### Run Unit Tests
 
 ```bash
-npm tests
+npm test
 ```
 
 ### Run End-to-End Tests
