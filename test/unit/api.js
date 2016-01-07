@@ -1,3 +1,6 @@
+/*jshint expr: true*/
+// above allows ...should.be.true to pass
+
 var jsdom = require('mocha-jsdom');
 var expect = require('chai').expect;
 
@@ -7,7 +10,7 @@ function isShown(el) {
   return !!el && !$el.is(':hidden') && !$el.parents().is(':hidden');
 }
 
-describe('sync tests', function() {
+describe('api tests', function() {
 
   jsdom();
 
@@ -255,6 +258,8 @@ describe('sync tests', function() {
   it('re-displays modal body sync with timeout', function(done) {
     demo.vm.showXrefs(true);
     var xrefs = demo.vm.xrefs();
+    console.log('xrefs');
+    console.log(xrefs);
     demo.vm.xrefs([{
       displayName: 'displayName1',
       db: 'db1',
@@ -267,6 +272,8 @@ describe('sync tests', function() {
     m.redraw();
     setTimeout(function() {
       m.redraw();
+      console.log('html test');
+      console.log(document.body.outerHTML);
       var modalBodyEl = document.querySelector('.simple-modal-body');
       expect(isShown(modalBodyEl)).to.be.true;
       done();
@@ -281,5 +288,90 @@ describe('sync tests', function() {
     var modalContainerEl = document.querySelector('.simple-modal-holder');
     expect(isShown(modalContainerEl)).to.be.false;
   });
+
+  //*
+  it('re-displays modal body sync with timeout', function(done) {
+    demo.vm.showXrefs(true);
+    var xrefs = demo.vm.xrefs();
+    console.log('xrefs');
+    console.log(xrefs);
+    demo.vm.xrefs([{
+      displayName: 'displayName1',
+      db: 'db1',
+      identifier: 'identifier1',
+    }, {
+      displayName: 'displayName2',
+      db: 'db2',
+      identifier: 'identifier2',
+    }]);
+    m.redraw();
+    setTimeout(function() {
+      m.redraw();
+      console.log('html test');
+      console.log(document.body.outerHTML);
+      var modalBodyEl = document.querySelector('.simple-modal-body');
+      expect(isShown(modalBodyEl)).to.be.true;
+      done();
+    }, 15);
+  });
+  //*/
+
+  /*
+  it('re-displays modal body async', function(done) {
+    console.log('html267');
+    console.log(document.body.outerHTML);
+
+    demo.vm.showXrefs(true);
+    m.redraw();
+
+    console.log('html273');
+    console.log(document.body.outerHTML);
+
+    var modalBodyEl = document.querySelector('.simple-modal-body');
+    var spinnerEl = document.querySelector('.spinner');
+    if (!isShown(spinnerEl)) {
+      console.warn('Missed a frame: spinner should be started');
+    }
+
+    console.log('html276');
+    console.log(document.body.outerHTML);
+
+    setTimeout(function() {
+      spinnerEl = document.querySelector('.spinner');
+      console.log('html281');
+      console.log(document.body.outerHTML);
+      // TODO the spinner exists here, but the entire modal
+      // seems to be hidden.
+      expect(isShown(spinnerEl)).to.be.true;
+
+      console.log('html287');
+      console.log(document.body.outerHTML);
+
+      demo.vm.xrefs([{
+        displayName: 'displayName1a',
+        db: 'db1',
+        identifier: 'identifier1',
+      }, {
+        displayName: 'displayName2',
+        db: 'db2',
+        identifier: 'identifier2',
+      }]);
+
+      m.redraw();
+      if (!!spinnerEl && isShown(spinnerEl)) {
+        console.warn('Missed a frame: spinner should be stopped');
+      }
+    }, 80);
+
+    setTimeout(function() {
+      spinnerEl = document.querySelector('.spinner');
+      // TODO not sure whether the spinner element is hidden or destroyed.
+      //expect(spinnerEl).to.be.null;
+      expect(isShown(spinnerEl)).to.be.false;
+      expect(isShown(modalBodyEl)).to.be.true;
+      done();
+    }, 180);
+  });
+  //*/
 
 });
