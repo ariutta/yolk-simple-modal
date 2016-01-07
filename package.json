@@ -34,7 +34,7 @@
     "jade": "^1.11.0",
     "jade-runtime": "^2.0.0",
     "jadeify": "^4.5.0",
-    "mithril": "^0.2.1",
+    "mithril": "^0.2.0",
     "simple-modal": "^1.0.1",
     "spin.js": "^2.0.2"
   },

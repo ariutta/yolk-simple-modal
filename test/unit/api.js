@@ -166,7 +166,7 @@ describe('api tests', function() {
       // but the one with the timeout always passes?
       //expect(isShown(modalContainerEl)).to.be.true;
       if (!isShown(modalContainerEl)) {
-        console.warn('      Missed a frame: modal should be visible');
+        console.warn('      Missed a frame: modal container should be visible');
       }
 
       setTimeout(function() {
@@ -237,10 +237,16 @@ describe('api tests', function() {
         identifier: 'identifier2',
       }]);
       m.redraw();
+
+      var modalBodyEl = document.querySelector('.simple-modal-body');
+      if (!isShown(modalBodyEl)) {
+        console.warn('      Missed a frame: modal body should be visible.');
+        mRedrawDelayed();
+      }
+
       // TODO again, why timeout needed?
       setTimeout(function() {
-        m.redraw();
-        var modalBodyEl = document.querySelector('.simple-modal-body');
+        modalBodyEl = document.querySelector('.simple-modal-body');
         expect(isShown(modalBodyEl)).to.be.true;
         done();
       }, 20);
