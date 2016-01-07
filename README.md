@@ -12,7 +12,7 @@ Create a Mithril component to serve as the body of the modal, e.g.:
 var modalContent = {};
 modalContent.view = function() {
   return m('div', {
-    onclick: m.withAttr('textContent', mSimpleModal.wrapClose(demo.vm.closeAndSave))
+    onclick: m.withAttr('textContent', demo.vm.closeAndSave)
   }, demo.vm.value());
 };
 ```
@@ -27,12 +27,24 @@ demo.vm = (function() {
   vm.init = function() {
     vm.value = m.prop('this is some sample modal content');
 
+    vm.modalStatus = function() {
+      if (vm.showValue()) {
+        if (!!vm.value()) {
+          return 'open';
+        } else {
+          return 'loading';
+        }
+      } else {
+        return 'closed';
+      }
+    };
+
     vm.closeAndSave = function(value) {
       // do something
     };
 
     vm.cancel = function() {
-      vm.showXrefs = false;
+      vm.showValue = false;
     };
   };
   return vm;
@@ -47,19 +59,15 @@ demo.view = function(ctrl) {
     m('div', {}, 'Button ID: ' + demo.vm.buttonId()),
     m('div', {}, 'Selection Value: ' + demo.vm.selectionValue()),
     (function() {
-
-      if (!demo.vm.showXrefs) {
-        return;
-      }
-
-      return m.component(mSimpleModal.component, {
+      return m.component(mSimpleModal, {
         title: 'sample title',
         content: modalContent,
         buttons: [{
           text: 'Cancel',
           closeOnClick: true,
           callback: demo.vm.cancel
-        }]
+        }],
+        status: vm.modalStatus()
       });
     })()
   ]);
@@ -68,5 +76,7 @@ demo.view = function(ctrl) {
 //initialize the application
 m.mount(document.body, {controller: demo.controller, view: demo.view});
 ```
+
+TODO: test this example, possibly using [mockdown](https://github.com/pjeby/mockdown).
 
 For more examples, see the directory `./test/e2e/`.

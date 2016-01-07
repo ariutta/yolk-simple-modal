@@ -4,6 +4,8 @@
 
 Create dir `./test/lib/mithril-simple-modal/dev`
 
+Compile code:
+
 ```bash
 node ./node_modules/browserify/bin/cmd.js ./index.js > ./test/lib/mithril-simple-modal/dev/mithril-simple-modal.bundle.js
 ```
@@ -22,4 +24,4 @@ Currently, they are manual only. TODO: set up selenium.
 npm start # start test server
 ```
 
-Visit [test selection page](http://localhost:8080/test/).
+Visit [test selection page](http://localhost:8080/test/index.html).
