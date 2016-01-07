@@ -12,7 +12,7 @@ demo.view = function(ctrl) {
         // 1) an HTML string,
         // 2) a mithril component
         // 3) a template in the mithril m(...) syntax
-        content: '<div>Hello World! ' + new Date().toISOString() + '</div>',
+        content: '<div>Hello World!</div>',
         buttons: [{
           text: 'Cancel',
           closeOnClick: true,
