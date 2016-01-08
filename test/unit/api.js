@@ -23,14 +23,57 @@ describe('api tests', function() {
   var demo;
   var modalContent;
 
-  function mRedrawDelayed(delay) {
-    delay = delay || 20;
-    setTimeout(function() {
-      m.redraw();
-    }, delay);
-  }
-
   before(function() {
+    // JS-DOM doesn't yet support insertAdjacentHTML
+    // (see issue https://github.com/tmpvar/jsdom/issues/1219),
+    // so we need to use this polyfill from
+    // https://gist.github.com/eligrey/1276030
+    /*
+     * insertAdjacentHTML.js
+     *   Cross-browser full HTMLElement.insertAdjacentHTML implementation.
+     *
+     * 2011-10-10
+     *
+     * By Eli Grey, http://eligrey.com
+     * Public Domain.
+     * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+     */
+    window.HTMLElement.prototype.insertAdjacentHTML = function(position, html) {
+      var ref = this;
+      var container = ref.ownerDocument.createElementNS('http://www.w3.org/1999/xhtml', '_');
+      var refParent = ref.parentNode;
+      var node;
+      var firstChild;
+      var nextSibling;
+
+      container.innerHTML = html;
+
+      switch (position.toLowerCase()) {
+        case 'beforebegin':
+          while ((node = container.firstChild)) {
+            refParent.insertBefore(node, ref);
+          }
+          break;
+        case 'afterbegin':
+          firstChild = ref.firstChild;
+          while ((node = container.lastChild)) {
+            firstChild = ref.insertBefore(node, firstChild);
+          }
+          break;
+        case 'beforeend':
+          while ((node = container.firstChild)) {
+            ref.appendChild(node);
+          }
+          break;
+        case 'afterend':
+          nextSibling = ref.nextSibling;
+          while ((node = container.lastChild)) {
+            nextSibling = refParent.insertBefore(node, nextSibling);
+          }
+          break;
+      }
+    };
+
     document.body.innerHTML = '';
     $ = require('jquery');
     m = require('mithril');
@@ -145,7 +188,7 @@ describe('api tests', function() {
   });
 
   describe('modal body from mithril component', function() {
-    it('loads modal sync', function(done) {
+    it('loads modal sync', function() {
       demo.vm.showXrefs(true);
       demo.vm.xrefs([{
         displayName: 'displayName1',
@@ -160,19 +203,9 @@ describe('api tests', function() {
       var modalContainerEl = document.querySelector('.simple-modal-holder');
       expect(isShown(modalContainerEl)).to.be.false;
 
-      m.redraw();
+      m.redraw(true);
 
-      // TODO why does the test below sometimes pass and sometimes fail,
-      // but the one with the timeout always passes?
-      //expect(isShown(modalContainerEl)).to.be.true;
-      if (!isShown(modalContainerEl)) {
-        console.warn('      Missed a frame: modal container should be visible');
-      }
-
-      setTimeout(function() {
-        expect(isShown(modalContainerEl)).to.be.true;
-        done();
-      }, 20);
+      expect(isShown(modalContainerEl)).to.be.true;
     });
 
     it('displays non-modal content in background', function() {
@@ -224,7 +257,7 @@ describe('api tests', function() {
       expect(isShown(modalContainerEl)).to.be.false;
     });
 
-    it('re-displays modal body', function(done) {
+    it('re-displays modal body', function() {
       demo.vm.showXrefs(true);
       var xrefs = demo.vm.xrefs();
       demo.vm.xrefs([{
@@ -236,56 +269,30 @@ describe('api tests', function() {
         db: 'db2',
         identifier: 'identifier2',
       }]);
-      m.redraw();
-
+      m.redraw(true);
       var modalBodyEl = document.querySelector('.simple-modal-body');
-      if (!isShown(modalBodyEl)) {
-        console.warn('      Missed a frame: modal body should be visible.');
-        mRedrawDelayed();
-      }
-
-      // TODO again, why timeout needed?
-      setTimeout(function() {
-        modalBodyEl = document.querySelector('.simple-modal-body');
-        expect(isShown(modalBodyEl)).to.be.true;
-        done();
-      }, 20);
+      expect(isShown(modalBodyEl)).to.be.true;
     });
 
     it('re-closes modal and hides modal container', function() {
       demo.vm.closeAndSave();
       demo.vm.xrefs([]);
-      m.redraw();
+      m.redraw(true);
       var modalContainerEl = document.querySelector('.simple-modal-holder');
       expect(isShown(modalContainerEl)).to.be.false;
     });
 
-    it('re-displays modal body async (loading)', function(done) {
+    it('re-displays modal body async (loading)', function() {
       demo.vm.showXrefs(true);
-      m.redraw();
-
-      var modalBodyEl = document.querySelector('.simple-modal-body');
+      m.redraw(true);
       var spinnerEl = document.querySelector('.spinner');
-      if (!isShown(spinnerEl)) {
-        console.warn('      Missed a frame: spinner should be started');
-        mRedrawDelayed();
-      }
-
-      setTimeout(function() {
-        spinnerEl = document.querySelector('.spinner');
-        spinnerEl = document.querySelector('.spinner');
-        expect(isShown(spinnerEl)).to.be.true;
-        done();
-      }, 80);
+      spinnerEl = document.querySelector('.spinner');
+      expect(isShown(spinnerEl)).to.be.true;
     });
 
     it('re-displays modal body async (loaded)', function(done) {
       var modalBodyEl = document.querySelector('.simple-modal-body');
       var spinnerEl = document.querySelector('.spinner');
-      if (!isShown(spinnerEl)) {
-        console.warn('      Missed a frame: spinner should be started');
-        mRedrawDelayed();
-      }
 
       setTimeout(function() {
         demo.vm.xrefs([{
@@ -298,78 +305,64 @@ describe('api tests', function() {
           identifier: 'identifier2',
         }]);
 
-        m.redraw();
+        m.redraw(true);
 
-        if (!!spinnerEl && isShown(spinnerEl)) {
-          console.warn('      Missed a frame: spinner should be stopped');
-          mRedrawDelayed();
-        }
-      }, 80);
-
-      setTimeout(function() {
         spinnerEl = document.querySelector('.spinner');
         expect(isShown(spinnerEl)).to.be.false;
         expect(isShown(modalBodyEl)).to.be.true;
         done();
-      }, 140);
+      }, 50);
     });
 
-  });
+    it('displays modal content as requested', function() {
+      var modalContentEl = document.querySelector('.simple-modal-content');
+      expect(isShown(modalContentEl)).to.be.true;
 
-  //*
-  describe('modal body from html string', function() {
-    it('re-displays modal body sync', function(done) {
-      demo.vm.showXrefs(true);
-      demo.vm.xrefs(['one', 'two']);
-      function htmlToFragment(ownerDocument, markup) {
-        var container = ownerDocument.createElement('div');
-        container.innerHTML = markup;
-        var fragment = ownerDocument.createDocumentFragment();
-        while (container.firstChild) {
-          fragment.appendChild(container.firstChild);
-        }
-        return fragment;
-      }
-      // JS-DOM doesn't yet support insertAdjacentHTML
-      // (see issue https://github.com/tmpvar/jsdom/issues/1219)
-      //
-      // Pulled this mock from
-      // https://github.com/lhorie/mithril.js/blob/
-      //    270b20a2b029da7a5807648f43e31798eb7e0e96/tests/mock.js
-      window.HTMLElement.prototype.insertAdjacentHTML = function(position, html) {
-        //todo: accept markup
-        if (position === 'beforebegin') {
-          this.parentNode.insertBefore(window.document.createTextNode(html), this);
-        } else if (position === 'beforeend') {
-          this.appendChild(window.document.createTextNode(html));
-        }
-      };
-      modalContent = '<div>Hello World!</div>',
-
-      m.redraw();
-
-      var modalBodyEl = document.querySelector('.simple-modal-body');
-      if (!isShown(modalBodyEl)) {
-        console.warn('      Missed a frame: modal body should be visible');
-        mRedrawDelayed();
-      }
-
-      // TODO get rid of this timeout. We shouldn't need it.
-      setTimeout(function() {
-        modalBodyEl = document.querySelector('.simple-modal-body');
-        expect(isShown(modalBodyEl)).to.be.true;
-        done();
-      }, 20);
+      var firstTableCell = modalContentEl.querySelector('td');
+      expect(isShown(firstTableCell)).to.be.true;
+      expect(firstTableCell.textContent).eql('displayName1a');
     });
 
     it('re-closes modal and hides modal container', function() {
       demo.vm.closeAndSave();
       demo.vm.xrefs([]);
-      m.redraw();
+      m.redraw(true);
       var modalContainerEl = document.querySelector('.simple-modal-holder');
       expect(isShown(modalContainerEl)).to.be.false;
     });
 
   });
-  //*/
+
+  describe('modal body from html string', function() {
+    it('re-displays modal body sync', function() {
+      demo.vm.showXrefs(true);
+      demo.vm.xrefs(['one', 'two']);
+
+      modalContent = '<p id="html-string-content">Hello World!</p>',
+
+      m.redraw(true);
+
+      var modalBodyEl = document.querySelector('.simple-modal-body');
+      expect(isShown(modalBodyEl)).to.be.true;
+    });
+
+    it('displays modal content as requested', function() {
+      var modalContentEl = document.querySelector('.simple-modal-content');
+      expect(isShown(modalContentEl)).to.be.true;
+
+      var contentTextEl = modalContentEl.querySelector('#html-string-content');
+      expect(isShown(contentTextEl)).to.be.true;
+      expect(contentTextEl.textContent).eql('Hello World!');
+    });
+
+    it('re-closes modal and hides modal container', function() {
+      demo.vm.closeAndSave();
+      demo.vm.xrefs([]);
+      m.redraw(true);
+      var modalContainerEl = document.querySelector('.simple-modal-holder');
+      expect(isShown(modalContainerEl)).to.be.false;
+    });
+
+  });
+
 });
