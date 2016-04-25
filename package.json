@@ -1,19 +1,23 @@
 {
-  "name": "mithril-simple-modal",
+  "name": "yolk-simple-modal",
   "version": "0.0.0",
-  "description": "Mithril wrapper for wunderlink/simple-modal.",
+  "description": "Yolk wrapper for wunderlink/simple-modal.",
   "main": "index.js",
   "scripts": {
+    "build": "browserify index.ts -p [ tsify ] > dist/bundle.es5.js",
+    "karma": "NODE_ENV=test karma start",
     "postinstall": "browserify ./node_modules/simple-modal/index.js --standalone createSimpleModal | derequire > ./node_modules/simple-modal/simple-modal.compiled.js",
     "start": "http-server",
-    "test": "mocha ./test/unit/api.js"
+    "test": "mocha ./test/unit/api.js",
+    "typings": "typings install file:yolk.d.ts file:spin.js.d.ts file:simple-modal.d.ts",
+    "watch": "watch 'npm run test' index.ts test/unit/**/*.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ariutta/mithril-simple-modal.git"
+    "url": "https://github.com/ariutta/yolk-simple-modal.git"
   },
   "keywords": [
-    "mithril",
+    "yolk",
     "modal",
     "lightbox",
     "light-box",
@@ -22,9 +26,9 @@
   "author": "Anders Riutta",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/ariutta/mithril-simple-modal/issues"
+    "url": "https://github.com/ariutta/yolk-simple-modal/issues"
   },
-  "homepage": "https://github.com/ariutta/mithril-simple-modal",
+  "homepage": "https://github.com/ariutta/yolk-simple-modal",
   "dependencies": {
     "browserify": "^12.0.1",
     "coffeeify": "^2.0.1",
@@ -34,18 +38,34 @@
     "jade": "^1.11.0",
     "jade-runtime": "^2.0.0",
     "jadeify": "^4.5.0",
-    "mithril": "^0.2.0",
+    "rx": "^4.0.0",
     "simple-modal": "^1.0.1",
-    "spin.js": "^2.0.2"
+    "spin.js": "^2.0.2",
+    "yolk": "^0.10.1"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
+    "brfs": "^1.4.3",
+    "chai": "^3.5.0",
+    "chai-as-promised": "~4.1.1",
     "debug": "^2.2.0",
+    "deglobalify": "^0.2.0",
     "http-server": "^0.8.5",
     "jquery": "^1.11.3",
     "jsdom": "^7.2.1",
+    "karma": "0.13.22",
+    "karma-browserify": "^5.0.3",
+    "karma-chai": "0.1.0",
+    "karma-chrome-launcher": "0.2.3",
+    "karma-coverage": "0.5.5",
+    "karma-firefox-launcher": "0.1.7",
+    "karma-growl-reporter": "0.1.1",
+    "karma-mocha": "0.2.2",
+    "karma-mocha-reporter": "2.0.0",
     "mocha": "^2.3.4",
     "mocha-jsdom": "^1.0.0",
-    "rx": "^2.5.3"
+    "tsify": "^0.15.2",
+    "typings": "^0.8.1",
+    "watch": "^0.17.1",
+    "watchify": "^3.0.0"
   }
 }

@@ -1,4 +1,5 @@
 {
     "node": true,
-    "browserify": true
+    "browserify": true,
+    "esnext": true
 }

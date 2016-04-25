@@ -1,0 +1,5 @@
+{
+  "ambientDependencies": {
+    "rx": "npm:rx/ts/rx.all.d.ts"
+  }
+}
