@@ -1,5 +1,4 @@
 {
     "preset": "google",
-    "esnext": true,
     "maximumLineLength": 100
 }

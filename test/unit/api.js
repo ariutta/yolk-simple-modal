@@ -10,8 +10,6 @@ var renderInDocument = require('../render-in-document');
 
 //var YolkSimpleModal = require('../../dist/bundle.es5.js');
 var YolkSimpleModal = require('../../index.ts').SimpleModalWrapper;
-console.log('YolkSimpleModal');
-console.log(YolkSimpleModal);
 
 // Note: must be greater than the debounce period
 var timeout = 500;
@@ -71,21 +69,23 @@ function fireEvent(node, eventName) {
   }
 }
 
-describe('create an identifier input element', function() {
-  describe('when entity type is NOT specified', function() {
-    it('select when identifier is NOT pre-selected', function(done) {
-      var vnode = h(YolkSimpleModal, {
-        className: 'placeholder-class-name'
-      });
-      var result = renderInDocument(vnode);
-      var node = result.node;
-      var cleanup = result.cleanup;
+describe('create a simple modal', function() {
+  it('when content is immediately available', function(done) {
+    var vnode = h(YolkSimpleModal, {
+      className: 'placeholder-class-name',
+      content: '<p>hello immediate world</p>',
+      title: 'Sample Title',
+      //buttons: [{}],
+    });
+    var result = renderInDocument(vnode);
+    var node = result.node;
+    var cleanup = result.cleanup;
 
-      var $node = $(node);
+    var $node = $(node);
 
-      setTimeout(function() {
-        assert.equal(node.tagName, 'DIV');
-        assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+    setTimeout(function() {
+      assert.equal(node.tagName, 'DIV');
+      assert.equal(node.getAttribute('class'), 'placeholder-class-name');
 
 //        assert.equal($node.val(), '');
 //
@@ -96,10 +96,49 @@ describe('create an identifier input element', function() {
 //        fireEvent($node[0], 'change');
 //        assert.equal($node.val(), '1234');
 
+      cleanup();
+      done();
+    }, timeout);
+  });
+
+  it('when content is asynchronously available', function(done) {
+    var vnode = h(YolkSimpleModal, {
+      className: 'placeholder-class-name',
+//      content: '<p>hello world</p>',
+      content: Rx.Observable.return('hello asynchronous world')
+              .delay(2 * 1000)
+              .map(function(data) {
+                //return h('p', {}, data);
+                return '<p>' + data + '</p>';
+              }),
+      title: 'Sample Title',
+      //buttons: [{}],
+    });
+    var result = renderInDocument(vnode);
+    var node = result.node;
+    var cleanup = result.cleanup;
+
+    var $node = $(node);
+
+    setTimeout(function() {
+      setTimeout(function() {
+        assert.equal(node.tagName, 'DIV');
+        assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+
+  //        assert.equal($node.val(), '');
+  //
+  //        $node.val('1234').change();
+  //        $node.val('1234').trigger('change');
+  //        assert.equal($node.val(), '1234');
+  //
+  //        fireEvent($node[0], 'change');
+  //        assert.equal($node.val(), '1234');
+
         cleanup();
         done();
-      }, timeout);
-    });
+      }, 3 * 1000);
+    }, timeout);
+  });
 
 //    it('select when identifier is pre-selected', function(done) {
 //      var identifier$ = new Rx.Subject();
@@ -235,5 +274,4 @@ describe('create an identifier input element', function() {
 //        done();
 //      }, timeout);
 //    });
-  });
 });

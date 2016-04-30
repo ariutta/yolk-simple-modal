@@ -1,39 +1,168 @@
+/// <reference path="typings/main/ambient/es6-shim/index.d.ts" />
 /// <reference path="typings/main/ambient/rx/index.d.ts" />
+/// <reference path="typings/main/definitions/lodash/index.d.ts" />
 /// <reference path="typings/main/definitions/spin.js/index.d.ts" />
 /// <reference path="typings/main/definitions/simple-modal/index.d.ts" />
 /// <reference path="typings/main/definitions/yolk/index.d.ts" />
 
 /******************************
- * Yolk simpleModal
+ * Yolk SimpleModal
  *****************************/
 
-/* jshint ignore:start */
-import * as createSimpleModal from './node_modules/simple-modal/simple-modal.compiled.js';
-import * as Spinner from 'spin.js';
+import {isElement, isString} from 'lodash';
+import createSimpleModal = require('simple-modal');
+import Spinner = require('spin.js');
 import * as Rx from 'rx';
-/* jshint ignore:end */
 import { CustomComponent, h } from 'yolk';
 
+
+interface props {
+	title?: string;
+	content: string | HTMLElement | Rx.Observable<string | HTMLElement>;
+	buttons?: any;
+}
+
+/* How this works
+ *
+ * A) If content immediately available
+ *    1) Open modal
+ *    2) Display content
+ * B) If content is loading
+ *    1) Open modal
+ *    2) Show loading indicator
+ *    3) When content loads, stop loading indicator and show content
+ */
+
+/* Statuses
+ * - closed
+ * - loading
+ * - open
+ */
 export class SimpleModalWrapper extends CustomComponent {
-  //_instance: any;
+  _modalInstance: any;
+  _spinner: any;
+  constructor(props: props) {
+		super(props);
+
+    let spinnerOptions = {
+      lines: 13, // The number of lines to draw
+      length: 20, // The length of each line
+      width: 10, // The line thickness
+      radius: 30, // The radius of the inner circle
+      corners: 1, // Corner roundness (0..1)
+      rotate: 0, // The rotation offset
+      direction: 1, // 1: clockwise, -1: counterclockwise
+      color: '#000', // #rgb or #rrggbb or array of colors
+      speed: 1, // Rounds per second
+      trail: 60, // Afterglow percentage
+      shadow: false, // Whether to render a shadow
+      hwaccel: false, // Whether to use hardware acceleration
+      className: 'spinner', // The CSS class to assign to the spinner
+      zIndex: 2e9, // The z-index (defaults to 2000000000)
+      top: '50%', // Top position relative to parent
+      left: '50%' // Left position relative to parent
+    };
+
+    let spinnerHeight: number = spinnerOptions.length + spinnerOptions.radius;
+		let spinnerContainerHeight: string = (spinnerHeight + 200) + 'px';
+
+		let defaultContent = '';
+    let {
+			title = '',
+      content = defaultContent,
+			buttons = [],
+			//status: 'closed'
+		} = props;
+
+		//    TODO do we need a status option?
+//    if (status === 'closed') {
+//      // just a placeholder
+//      content = m('span');
+//    } else if (status === 'loading') {
+//      content = h('div', {
+//        style: {
+//          // We specify this height in order to make room for the spinner
+//          height: spinnerContainerHeight
+//        }
+//      });
+//    } else if (status === 'open') {
+//      if (typeof content === 'string') {
+//        content = m.trust(content);
+//      }
+//    } else {
+//      throw new Error('Unrecognized status.');
+//    }
+
+    let modalInstance;
+		let initialContent;
+		if (isElement(content) || isString(content)) {
+			initialContent = content;
+		} else {
+			initialContent = defaultContent;
+		}
+		modalInstance	= createSimpleModal({
+			title: title,
+			content: initialContent,
+			attachToBody: true,
+			removeOnClose: false,
+			buttons: buttons
+		});
+    this._modalInstance = modalInstance;
+    let modalContentContainer = <HTMLElement>modalInstance.m.querySelector('.simple-modal-content');
+		modalContentContainer.style.minHeight = spinnerContainerHeight;
+
+    let spinner = new Spinner(spinnerOptions);
+    this._spinner = spinner;
+    spinner.spin(modalContentContainer);
+  }
   onMount(props, node) {
-    //this._instance = $(node).myjQueryThing(props);
-    console.log('props');
-    console.log(props);
-    console.log('node');
-    console.log(node);
-    node.setAttribute('class', props.className);
-    //this._instance = {};
+		var that = this;
+    let {
+			title = '',
+      content,
+			buttons = [],
+			className = ''
+		} = props;
+
+		let contentSource: Rx.Observable<string | HTMLElement>;
+		if (isElement(content) || isString(content)) {
+			contentSource = Rx.Observable.return(content);
+		} else {
+			contentSource = content;
+		}
+
+		contentSource.subscribe(function(result) {
+			that._spinner.stop();
+			that._modalInstance.deconstruct();
+
+			node.setAttribute('class', className);
+
+			let modalInstance = createSimpleModal({
+				title: title,
+				content: result,
+				buttons: buttons,
+				attachToBody: false,
+				removeOnClose: false
+			});
+			that._modalInstance = modalInstance;
+			let modalContainer = modalInstance.m;
+			node.appendChild(modalContainer);
+		}, function(err) {
+			throw err;
+		});
   }
 
   onUpdate(props, node) {
-    //this._instance.update(props);
-    node.setAttribute('class', props.className);
+    let {
+      content,
+			className = ''
+		} = props;
+		this._modalInstance.updateContent(content);
+    node.setAttribute('class', className);
   }
 
   onUnmount() {
-    //this._instance.destroy();
-    node.setAttribute('class', '');
+		this._modalInstance.deconstruct();
   }
 }
 //

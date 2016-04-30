@@ -1,5 +1,8 @@
 {
     "node": true,
     "browserify": true,
-    "esnext": true
+    "esnext": true,
+    "options": {
+      "-E054": true
+    }
 }

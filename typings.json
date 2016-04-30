@@ -1,5 +1,13 @@
 {
   "ambientDependencies": {
-    "rx": "npm:rx/ts/rx.all.d.ts"
+    "es6-shim": "registry:dt/es6-shim#0.31.2+20160317120654",
+    "rx": "npm:rx/ts/rx.all.d.ts",
+    "spin": "registry:dt/spin#2.3.2+20160316155526"
+  },
+  "dependencies": {
+    "lodash": "registry:npm/lodash#4.0.0+20160416211519",
+    "simple-modal": "file:simple-modal.d.ts",
+    "spin.js": "file:spin.js.d.ts",
+    "yolk": "file:yolk.d.ts"
   }
 }
