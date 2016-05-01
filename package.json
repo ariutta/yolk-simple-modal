@@ -7,9 +7,9 @@
     "build": "browserify index.ts -p [ tsify ] --debug --standalone YolkSimpleModal | derequire > dist/bundle.es5.js",
     "watchify": "watchify index.ts -p [ tsify ] --debug --standalone YolkSimpleModal -o 'derequire > dist/bundle.es5.js'",
     "postinstall": "npm run build",
-    "start": "npm-run-all --parallel watchify start:*",
+    "start": "npm-run-all --parallel start:* watchify",
     "start:async": "budo test/e2e/async.js --live --open -- --plugin tsify",
-    "start:async-using-es5-dist": "npm run build && budo test/e2e/async-using-es5-dist.js --live --open",
+    "start:async-using-es5-dist": "budo test/e2e/async-using-es5-dist.js --live --open",
     "start:immediate": "budo test/e2e/immediate.js --live --open -- --plugin tsify",
     "test": "NODE_ENV=test karma start"
   },
