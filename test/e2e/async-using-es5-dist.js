@@ -1,4 +1,3 @@
-var BridgeDb = require('bridgedb');
 var Rx = require('rx');
 var yolk = require('yolk');
 var h = yolk.h;
@@ -6,17 +5,17 @@ var noop = function() {};
 var render = yolk.render;
 var renderInDocument = require('../render-in-document');
 
-var YolkSimpleModal = require('../../index.ts').SimpleModalWrapper;
+var YolkSimpleModal = require('../../dist/bundle.es5.js').default;
 
 var vnode = h(YolkSimpleModal, {
   className: 'placeholder-class-name',
-  content: new BridgeDb().dataset.query({id: 'http://identifiers.org/ncbigene/'})
-          .toArray()
+  content: Rx.Observable.return('hello asynchronous world run using the ES5 bundle')
+          .delay(2 * 1000)
           .map(function(data) {
             //return h('p', {}, data);
-            return '<p>' + JSON.stringify(data) + '</p>';
+            return '<p>' + data + '</p>';
           }),
-  title: 'Datasources',
+  title: 'Sample Title',
 });
 var result = renderInDocument(vnode);
 var node = result.node;

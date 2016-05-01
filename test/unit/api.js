@@ -8,8 +8,7 @@ var noop = function() {};
 var render = yolk.render;
 var renderInDocument = require('../render-in-document');
 
-//var YolkSimpleModal = require('../../dist/bundle.es5.js');
-var YolkSimpleModal = require('../../index.ts').SimpleModalWrapper;
+var YolkSimpleModal = require('../../index.ts').default;
 
 // Note: must be greater than the debounce period
 var timeout = 500;

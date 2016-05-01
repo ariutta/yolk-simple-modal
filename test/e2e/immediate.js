@@ -4,7 +4,7 @@ var noop = function() {};
 var render = yolk.render;
 var renderInDocument = require('../render-in-document');
 
-var YolkSimpleModal = require('../../index.ts').SimpleModalWrapper;
+var YolkSimpleModal = require('../../index.ts').default;
 
 var vnode = h(YolkSimpleModal, {
   className: 'placeholder-class-name',
