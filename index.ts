@@ -38,7 +38,7 @@ interface props {
  * - loading
  * - open
  */
-export class SimpleModalWrapper extends CustomComponent {
+export default class SimpleModalWrapper extends CustomComponent {
   _modalInstance: any;
   _spinner: any;
   constructor(props: props) {
