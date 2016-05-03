@@ -9,31 +9,43 @@
  * Yolk SimpleModal
  *****************************/
 
-import {isElement, isString} from 'lodash';
+import {isArray, isElement, isFunction, isString} from 'lodash';
 import createSimpleModal = require('simple-modal');
 import Spinner = require('spin.js');
-import * as Rx from 'rx';
-import { CustomComponent, h } from 'yolk';
+import {CustomComponent, h, Rx} from 'yolk';
 
-
-interface props {
-	title?: string;
+interface propsInitial {
+	title?: string | Rx.Observable<string>;
 	content: string | HTMLElement | Rx.Observable<string | HTMLElement>;
-	buttons?: any;
+	buttons?: any | Rx.Observable<any>;
+	// TODO can we get rid of this?
+	//className?: string | Rx.Observable<string>;
 }
 
+interface propsResolved {
+	title?: string;
+	content: string | HTMLElement;
+	buttons?: any;
+	//className?: string;
+}
+
+let setDefaultStyle = function() {
+	// TODO: this will override the style of the *first* overlay;
+	// What if there are multiple overlays? Should refactor to just select this one.
+	var overlay = <HTMLElement>document.querySelector('.simple-modal-overlay');
+	overlay.style.opacity = '0.4';
+	overlay.style.backgroundColor = '#fff';
+};
+
 /* How this works
- *
- * A) If content immediately available
- *    1) Open modal
- *    2) Display content
- * B) If content is loading
- *    1) Open modal
- *    2) Show loading indicator
- *    3) When content loads, stop loading indicator and show content
+ * A) Create and open modal with loading indicator (spinner),
+ * 		including all params that are immediately available
+ * B) Once all params are loaded
+ *    1) Destroy initial spinner modal
+ *    2) Create and open new modal with all params provided
  */
 
-/* Statuses
+/* Statuses (not currently working)
  * - closed
  * - loading
  * - open
@@ -41,7 +53,7 @@ interface props {
 export default class SimpleModalWrapper extends CustomComponent {
   _modalInstance: any;
   _spinner: any;
-  constructor(props: props) {
+  constructor(props: propsInitial) {
 		super(props);
 
     let spinnerOptions = {
@@ -66,10 +78,9 @@ export default class SimpleModalWrapper extends CustomComponent {
     let spinnerHeight: number = spinnerOptions.length + spinnerOptions.radius;
 		let spinnerContainerHeight: string = (spinnerHeight + 200) + 'px';
 
-		let defaultContent = '';
     let {
 			title = '',
-      content = defaultContent,
+      content = '',
 			buttons = [],
 			//status: 'closed'
 		} = props;
@@ -94,79 +105,66 @@ export default class SimpleModalWrapper extends CustomComponent {
 //    }
 
     let modalInstance;
-		let initialContent;
-		if (isElement(content) || isString(content)) {
-			initialContent = content;
-		} else {
-			initialContent = defaultContent;
-		}
 		modalInstance	= createSimpleModal({
-			title: title,
-			content: initialContent,
+			title: isString(title) ? title : '',
+			content: (isString(content) || isElement(content)) ? <string | HTMLElement>content : '',
+			//content: '',
 			attachToBody: true,
 			removeOnClose: false,
-			buttons: buttons
+			buttons: isArray(buttons) ? buttons : []
 		});
     this._modalInstance = modalInstance;
     let modalContentContainer = <HTMLElement>modalInstance.m.querySelector('.simple-modal-content');
 		modalContentContainer.style.minHeight = spinnerContainerHeight;
 
+		setDefaultStyle();
+
     let spinner = new Spinner(spinnerOptions);
     this._spinner = spinner;
     spinner.spin(modalContentContainer);
   }
-  onMount(props, node) {
+  onMount(props: propsResolved, node) {
 		var that = this;
     let {
 			title = '',
       content,
 			buttons = [],
-			className = ''
+			//className = ''
 		} = props;
 
-		let contentSource: Rx.Observable<string | HTMLElement>;
-		if (isElement(content) || isString(content)) {
-			contentSource = Rx.Observable.return(content);
-		} else {
-			contentSource = content;
-		}
+		that._spinner.stop();
+		that._modalInstance.deconstruct();
 
-		contentSource.subscribe(function(result) {
-			that._spinner.stop();
-			that._modalInstance.deconstruct();
+		//node.setAttribute('class', className);
 
-			node.setAttribute('class', className);
-
-			let modalInstance = createSimpleModal({
-				title: title,
-				content: result,
-				buttons: buttons,
-				attachToBody: false,
-				removeOnClose: false
-			});
-			that._modalInstance = modalInstance;
-			let modalContainer = modalInstance.m;
-			node.appendChild(modalContainer);
-		}, function(err) {
-			throw err;
+		let modalInstance = createSimpleModal({
+			title: title,
+			content: content,
+			buttons: buttons,
+			attachToBody: false,
+			removeOnClose: false
 		});
+		that._modalInstance = modalInstance;
+		let modalContainer = modalInstance.m;
+		node.appendChild(modalContainer);
+
+		setDefaultStyle();
   }
 
-  onUpdate(props, node) {
+  onUpdate(props: propsResolved, node) {
     let {
       content,
-			className = ''
+			//className = ''
 		} = props;
 		this._modalInstance.updateContent(content);
-    node.setAttribute('class', className);
+    //node.setAttribute('class', className);
   }
 
   onUnmount() {
 		this._modalInstance.deconstruct();
   }
 }
-//
-//
+
 //// NOTE: using the compiled version so that we can avoid the headaches of trying
 //// to work with uncompiled coffescript, jade and CSS (such as during
 //// unit testing in Node.js with jsdom).

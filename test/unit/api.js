@@ -1,3 +1,8 @@
+// TODO do the different input types:
+// 1. string
+// 2. HTMLElement
+// 3. Function returning 1 or 2
+// 4. Observable returning 1 or 2
 var $ = require('jquery');
 
 var Rx = require('rx');
@@ -71,7 +76,7 @@ function fireEvent(node, eventName) {
 describe('create a simple modal', function() {
   it('when content is immediately available', function(done) {
     var vnode = h(YolkSimpleModal, {
-      className: 'placeholder-class-name',
+      //className: 'placeholder-class-name',
       content: '<p>hello immediate world</p>',
       title: 'Sample Title',
       //buttons: [{}],
@@ -84,7 +89,7 @@ describe('create a simple modal', function() {
 
     setTimeout(function() {
       assert.equal(node.tagName, 'DIV');
-      assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+      //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
 
 //        assert.equal($node.val(), '');
 //
@@ -102,7 +107,7 @@ describe('create a simple modal', function() {
 
   it('when content is asynchronously available', function(done) {
     var vnode = h(YolkSimpleModal, {
-      className: 'placeholder-class-name',
+      //className: 'placeholder-class-name',
 //      content: '<p>hello world</p>',
       content: Rx.Observable.return('hello asynchronous world')
               .delay(2 * 1000)
@@ -122,7 +127,7 @@ describe('create a simple modal', function() {
     setTimeout(function() {
       setTimeout(function() {
         assert.equal(node.tagName, 'DIV');
-        assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+        //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
 
   //        assert.equal($node.val(), '');
   //

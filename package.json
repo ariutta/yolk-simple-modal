@@ -4,13 +4,14 @@
   "description": "Yolk wrapper for wunderlink/simple-modal.",
   "main": "dist/bundle.es5.js",
   "scripts": {
-    "build": "browserify index.ts -p [ tsify ] --debug --standalone YolkSimpleModal | derequire > dist/bundle.es5.js",
-    "watchify": "watchify index.ts -p [ tsify ] --debug --standalone YolkSimpleModal -o 'derequire > dist/bundle.es5.js'",
+    "build": "browserify --standalone YolkSimpleModal index.ts -p [ tsify ] -p browserify-derequire --g browserify-shim --debug -o dist/bundle.es5.js",
+    "watchify": "watchify --standalone YolkSimpleModal index.ts -p [ tsify ] -p browserify-derequire --g browserify-shim --debug -o dist/bundle.es5.js",
     "postinstall": "npm run build",
     "start": "npm-run-all --parallel start:* watchify",
     "start:async": "budo test/e2e/async.js --live --open -- --plugin tsify",
-    "start:async-using-es5-dist": "budo test/e2e/async-using-es5-dist.js --live --open",
+    "start:async-using-es5-dist": "npm run build && budo test/e2e/async-using-es5-dist.js --live --open",
     "start:immediate": "budo test/e2e/immediate.js --live --open -- --plugin tsify",
+    "start:immediate-using-es5-dist": "npm run build && budo test/e2e/immediate-using-es5-dist.js --live --open",
     "test": "NODE_ENV=test karma start"
   },
   "repository": {
@@ -33,6 +34,8 @@
   "dependencies": {
     "brfs": "^1.4.3",
     "browserify": "^12.0.1",
+    "browserify-derequire": "^0.9.4",
+    "browserify-shim": "^3.8.12",
     "coffeeify": "^2.0.1",
     "cssify": "^1.0.1",
     "deglobalify": "^0.2.0",
@@ -68,5 +71,10 @@
     "typings": "^0.8.1",
     "watch": "^0.17.1",
     "watchify": "^3.0.0"
+  },
+  "browserify-shim": {
+    "rx": {
+      "exports": "global:Rx"
+    }
   }
 }
