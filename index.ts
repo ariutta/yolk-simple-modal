@@ -9,10 +9,21 @@
  * Yolk SimpleModal
  *****************************/
 
+
+// TODO why does the TypeScript compiler die at the following line?
+//import { default as isComponent } from 'yolk/src/isComponent';
+function isComponent(x) {
+	var types = [
+		'Widget',
+		'VirtualNode',
+		'VirtualText',
+	];
+	return x && types.indexOf(x.type) > -1;
+}
 import {isArray, isElement, isFunction, isString} from 'lodash';
 import createSimpleModal = require('simple-modal');
 import Spinner = require('spin.js');
-import {CustomComponent, h, Rx} from 'yolk';
+import {CustomComponent, h, render, Rx} from 'yolk';
 
 interface propsInitial {
 	title?: string | Rx.Observable<string>;
@@ -108,7 +119,6 @@ export default class SimpleModalWrapper extends CustomComponent {
 		modalInstance	= createSimpleModal({
 			title: isString(title) ? title : '',
 			content: (isString(content) || isElement(content)) ? <string | HTMLElement>content : '',
-			//content: '',
 			attachToBody: true,
 			removeOnClose: false,
 			buttons: isArray(buttons) ? buttons : []
@@ -139,7 +149,7 @@ export default class SimpleModalWrapper extends CustomComponent {
 
 		let modalInstance = createSimpleModal({
 			title: title,
-			content: content,
+			content: (isString(content) || isElement(content)) ? <string | HTMLElement>content : '',
 			buttons: buttons,
 			attachToBody: false,
 			removeOnClose: false
@@ -147,6 +157,10 @@ export default class SimpleModalWrapper extends CustomComponent {
 		that._modalInstance = modalInstance;
 		let modalContainer = modalInstance.m;
 		node.appendChild(modalContainer);
+
+		if (isComponent(content)) {
+			render(content, <HTMLElement>modalContainer.querySelector('.simple-modal-content'));
+		}
 
 		setDefaultStyle();
   }

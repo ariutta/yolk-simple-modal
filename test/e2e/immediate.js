@@ -3,7 +3,6 @@ var yolk = require('yolk');
 var h = yolk.h;
 var noop = function() {};
 var render = yolk.render;
-var renderInDocument = require('../render-in-document');
 
 var YolkSimpleModal = require('../../index.ts').default;
 
@@ -17,6 +16,8 @@ var vnode = h(YolkSimpleModal, {
   '</p>',
   title: 'Title: immediate, budo',
 });
-var result = renderInDocument(vnode);
-var node = result.node;
-var cleanup = result.cleanup;
+
+var node = document.createElement('div');
+document.body.appendChild(node);
+
+render(vnode, node);

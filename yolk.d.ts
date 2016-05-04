@@ -1,29 +1,32 @@
 declare function addProperties(): any;
 
-declare class YolkBaseComponent {
-
-}
-
 declare class CompositePropSubject {
 
 }
 
+declare class Component {
+
+}
+
+export function h(component: string|Function, props?: Object, ...children: Array<any>): Component;
+
 export class DOM {
 }
 
-export function h(p: any): any;
-export function registerElement(): any;
+export function registerElement(name: string, fn: Function): void
 
 export class CustomComponent {
-	constructor(props);
+	constructor(props: Object);
 	type: string;
-	onMount(props: any, node: any): void;
-	onUpdate(props: any, node: any): void;
-	onUnmount(): void;
+	onMount(props: Object, node: HTMLElement): void;
+	onUpdate(props: Object, node: HTMLElement): void;
+	onUnmount (node: HTMLElement): void;
 }
 
+
 export function wrapObject(): any;
-export function render(): any;
+
+export function render(instance: any, node: HTMLElement): Component;
 
 export class Rx {
 }

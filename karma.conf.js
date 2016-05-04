@@ -12,11 +12,17 @@ module.exports = function(config) {
     },
     browserify: {
       debug: true,
-      plugin: ['tsify'],
+      plugin: [
+        'tsify',
+        //'browserify-derequire',
+      ],
       transform: [
         'brfs',
-        'deglobalify'
-      ]
+        //'deglobalify'
+      ],
+//      globalTransform: [
+//        'browserify-shim'
+//      ]
     },
     colors: true,
     reporters: [

@@ -1,11 +1,6 @@
-// TODO do the different input types:
-// 1. string
-// 2. HTMLElement
-// 3. Function returning 1 or 2
-// 4. Observable returning 1 or 2
 var $ = require('jquery');
 
-var Rx = require('rx');
+var Rx = global.Rx = require('rx');
 
 var yolk = require('yolk');
 var h = yolk.h;
@@ -13,10 +8,8 @@ var noop = function() {};
 var render = yolk.render;
 var renderInDocument = require('../render-in-document');
 
-var YolkSimpleModal = require('../../index.ts').default;
-
-// Note: must be greater than the debounce period
-var timeout = 500;
+var YolkSimpleModalBudo = require('../../index.ts').default;
+var YolkSimpleModalES5Bundle = require('../../dist/bundle.es5.js').default;
 
 function fireEvent(node, eventName) {
   // Make sure we use the ownerDocument from the provided node to avoid cross-window problems
@@ -74,208 +67,101 @@ function fireEvent(node, eventName) {
 }
 
 describe('create a simple modal', function() {
-  it('when content is immediately available', function(done) {
-    var vnode = h(YolkSimpleModal, {
-      //className: 'placeholder-class-name',
-      content: '<p>hello immediate world</p>',
-      title: 'Sample Title',
-      //buttons: [{}],
+
+  function run(bundler, content) {
+    var YolkSimpleModal = bundler.value;
+    describe('bundler: ' + bundler.name, function() {
+      describe('content type: ' + content.type, function() {
+        it('when content is immediately available', function(done) {
+          var vnode = h(YolkSimpleModal, {
+            //className: 'placeholder-class-name',
+            content: content.value,
+            title: ['immediate', bundler.name, content.type].join(',\ '),
+            //buttons: [{}],
+          });
+          var result = renderInDocument(vnode);
+          var node = result.node;
+          var cleanup = result.cleanup;
+
+          var $node = $(node);
+
+          setTimeout(function() {
+            assert.equal(node.tagName, 'DIV');
+            //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+            var actualTextContent = node.querySelector('#myparagraph').textContent;
+            assert.equal(actualTextContent, 'hello world! (' + content.type + ')');
+
+            cleanup();
+            done();
+          }, 1);
+        });
+
+        it('when content is asynchronously available', function(done) {
+          // Note: timeout must be greater than delay
+          var delay = 200;
+          var timeout = delay + 10;
+
+          var vnode = h(YolkSimpleModal, {
+            //className: 'placeholder-class-name',
+            //      content: '<p>hello world</p>',
+            content: Rx.Observable.return(content.value)
+                    .delay(delay),
+            title: ['async', bundler.name, content.type].join(',\ '),
+            //buttons: [{}],
+          });
+          var result = renderInDocument(vnode);
+          var node = result.node;
+          var cleanup = result.cleanup;
+
+          var $node = $(node);
+
+          setTimeout(function() {
+            assert.equal(node.tagName, 'DIV');
+            //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+            var actualTextContent = node.querySelector('#myparagraph').textContent;
+            assert.equal(actualTextContent, 'hello world! (' + content.type + ')');
+
+            cleanup();
+            done();
+          }, timeout);
+        });
+      });
     });
-    var result = renderInDocument(vnode);
-    var node = result.node;
-    var cleanup = result.cleanup;
+  }
 
-    var $node = $(node);
+  var bundlers = [{
+    name: 'karma preprocessor',
+    value: YolkSimpleModalBudo
+  }, {
+    name: 'pre-bundled (ES5)',
+    value: YolkSimpleModalES5Bundle
+  }];
+  var testElement = window.document.createElement('p');
+  testElement.setAttribute('id', 'myparagraph');
+  testElement.textContent = 'hello world! (HTMLElement)';
 
-    setTimeout(function() {
-      assert.equal(node.tagName, 'DIV');
-      //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
+  // acceptable content types:
+  // 1. string
+  // 2. HTMLElement
+  // 3. YolkComponent
+  // 4. Observable with any of the above
+  var contents = [{
+    type: 'string',
+    value: '<p id="myparagraph">hello world! (string)</p>',
+  }, {
+    type: 'HTMLElement',
+    value: testElement,
+  }, {
+    type: 'YolkComponent',
+    value: h('p', {
+      id: 'myparagraph',
+    }, 'hello world! (YolkComponent)'),
+  }];
 
-//        assert.equal($node.val(), '');
-//
-//        $node.val('1234').change();
-//        $node.val('1234').trigger('change');
-//        assert.equal($node.val(), '1234');
-//
-//        fireEvent($node[0], 'change');
-//        assert.equal($node.val(), '1234');
-
-      cleanup();
-      done();
-    }, timeout);
+  bundlers.forEach(function(bundler) {
+    contents.forEach(function(content) {
+      run(bundler, content);
+    });
   });
 
-  it('when content is asynchronously available', function(done) {
-    var vnode = h(YolkSimpleModal, {
-      //className: 'placeholder-class-name',
-//      content: '<p>hello world</p>',
-      content: Rx.Observable.return('hello asynchronous world')
-              .delay(2 * 1000)
-              .map(function(data) {
-                //return h('p', {}, data);
-                return '<p>' + data + '</p>';
-              }),
-      title: 'Sample Title',
-      //buttons: [{}],
-    });
-    var result = renderInDocument(vnode);
-    var node = result.node;
-    var cleanup = result.cleanup;
-
-    var $node = $(node);
-
-    setTimeout(function() {
-      setTimeout(function() {
-        assert.equal(node.tagName, 'DIV');
-        //assert.equal(node.getAttribute('class'), 'placeholder-class-name');
-
-  //        assert.equal($node.val(), '');
-  //
-  //        $node.val('1234').change();
-  //        $node.val('1234').trigger('change');
-  //        assert.equal($node.val(), '1234');
-  //
-  //        fireEvent($node[0], 'change');
-  //        assert.equal($node.val(), '1234');
-
-        cleanup();
-        done();
-      }, 3 * 1000);
-    }, timeout);
-  });
-
-//    it('select when identifier is pre-selected', function(done) {
-//      var identifier$ = new Rx.Subject();
-//      var vnode = h(YolkSimpleModal, {
-//        identifier: identifier$,
-//      });
-//      var result = renderInDocument(vnode);
-//      var node = result.node;
-//      var cleanup = result.cleanup;
-//
-//      var $node = $(node);
-//
-//      identifier$.onNext('ENSG00000012048');
-//
-//      setTimeout(function() {
-//        assert.equal(node.tagName, 'INPUT');
-//
-//        assert.equal($node.val(), 'ENSG00000012048');
-//
-//        $node.val('672');
-//        fireEvent($node[0], 'change');
-//        assert.equal($node.val(), '672');
-//
-//        cleanup();
-//        done();
-//      }, timeout);
-//    });
-//
-//    it('enable and then select', function(done) {
-//      var disabled$ = new Rx.Subject();
-//      var vnode = h(YolkSimpleModal, {
-//        disabled: disabled$
-//      });
-//      var result = renderInDocument(vnode);
-//      var node = result.node;
-//      var cleanup = result.cleanup;
-//
-//      var $node = $(node);
-//
-//      disabled$.onNext(true);
-//
-//      setTimeout(function() {
-//        assert.equal(node.tagName, 'INPUT');
-//
-//        assert.equal($node.prop('disabled'), true);
-//
-//        setTimeout(function() {
-//          disabled$.onNext(false);
-//
-//          $node.val('672');
-//          fireEvent($node[0], 'change');
-//          assert.equal($node.val(), '672');
-//
-//          cleanup();
-//          done();
-//        }, timeout);
-//      }, timeout);
-//    });
-//
-//    it('programmatically set identifier', function(done) {
-//      var identifier$ = new Rx.Subject();
-//      var vnode = h(YolkSimpleModal.IdentifierControl, {
-//        identifier: identifier$,
-//      });
-//      var result = renderInDocument(vnode);
-//      var node = result.node;
-//      var cleanup = result.cleanup;
-//
-//      var $node = $(node);
-//
-//      identifier$.onNext('ENSG00000012048');
-//
-//      setTimeout(function() {
-//        assert.equal(node.tagName, 'INPUT');
-//
-//        assert.equal($node.val(), 'ENSG00000012048');
-//
-//        cleanup();
-//        done();
-//      }, timeout);
-//    });
-//
-//    it('programmatically set identifier and then programmatically update', function(done) {
-//      var identifier$ = new Rx.Subject();
-//      var vnode = h(YolkSimpleModal.IdentifierControl, {
-//        identifier: identifier$,
-//      });
-//      var result = renderInDocument(vnode);
-//      var node = result.node;
-//      var cleanup = result.cleanup;
-//
-//      identifier$.onNext('1234');
-//
-//      var $node = $(node);
-//
-//      assert.equal(node.tagName, 'INPUT');
-//
-//      setTimeout(function() {
-//        assert.equal($node.val(), '1234');
-//
-//        identifier$.onNext('ENSG00000012048');
-//
-//        assert.equal($node.val(), 'ENSG00000012048');
-//
-//        cleanup();
-//        done();
-//      }, timeout);
-//    });
-//
-//    it('programmatically set identifier and then select', function(done) {
-//      var identifier$ = new Rx.Subject();
-//      var vnode = h(YolkSimpleModal, {
-//        identifier: identifier$,
-//      });
-//      var result = renderInDocument(vnode);
-//      var node = result.node;
-//      var cleanup = result.cleanup;
-//
-//      identifier$.onNext('ENSG00000012048');
-//
-//      var $node = $(node);
-//
-//      assert.equal(node.tagName, 'INPUT');
-//
-//      setTimeout(function() {
-//        assert.equal($node.val(), 'ENSG00000012048');
-//
-//        $node.val('1234');
-//        fireEvent($node[0], 'change');
-//        assert.equal($node.val(), '1234');
-//
-//        cleanup();
-//        done();
-//      }, timeout);
-//    });
 });

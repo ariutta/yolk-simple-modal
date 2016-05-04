@@ -1,6 +1,6 @@
+var Rx = global.Rx = yolk.Rx;
 var yolk = require('yolk');
 var h = yolk.h;
-var Rx = global.Rx = yolk.Rx;
 
 var render = yolk.render;
 
