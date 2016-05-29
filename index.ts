@@ -10,15 +10,17 @@
  *****************************/
 
 
-// TODO why does the TypeScript compiler die at the following line?
+// TODO why does the TypeScript compiler die at the following import?
+// I just created my own function below to get this, but it would
+// be nice not to have to do that.
 //import { default as isComponent } from 'yolk/src/isComponent';
 function isComponent(x) {
-	var types = [
+	var componentTypes = [
 		'Widget',
 		'VirtualNode',
 		'VirtualText',
 	];
-	return x && types.indexOf(x.type) > -1;
+	return x && componentTypes.indexOf(x.type) > -1;
 }
 import {isArray, isElement, isFunction, isString} from 'lodash';
 import createSimpleModal = require('simple-modal');
@@ -120,7 +122,7 @@ export default class SimpleModalWrapper extends CustomComponent {
 			title: isString(title) ? title : '',
 			content: (isString(content) || isElement(content)) ? <string | HTMLElement>content : '',
 			attachToBody: true,
-			removeOnClose: false,
+			removeOnClose: true,
 			buttons: isArray(buttons) ? buttons : []
 		});
     this._modalInstance = modalInstance;
@@ -152,7 +154,7 @@ export default class SimpleModalWrapper extends CustomComponent {
 			content: (isString(content) || isElement(content)) ? <string | HTMLElement>content : '',
 			buttons: buttons,
 			attachToBody: false,
-			removeOnClose: false
+			removeOnClose: true
 		});
 		that._modalInstance = modalInstance;
 		let modalContainer = modalInstance.m;
