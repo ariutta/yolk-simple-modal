@@ -72,5 +72,7 @@
     "typings": "^0.8.1",
     "watch": "^0.17.1",
     "watchify": "^3.0.0"
+  },
+  "browserify-shim": {
   }
 }
