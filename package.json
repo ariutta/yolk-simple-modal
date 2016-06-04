@@ -1,6 +1,6 @@
 {
   "name": "yolk-simple-modal",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Yolk wrapper for wunderlink/simple-modal.",
   "main": "dist/bundle.es5.js",
   "scripts": {
