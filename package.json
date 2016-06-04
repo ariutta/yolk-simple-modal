@@ -6,7 +6,7 @@
   "scripts": {
     "build": "browserify --standalone YolkSimpleModal index.ts -p [ tsify ] -p browserify-derequire --g browserify-shim --debug -o dist/bundle.es5.js",
     "watchify": "watchify --standalone YolkSimpleModal index.ts -p [ tsify ] -p browserify-derequire --g browserify-shim --debug -o dist/bundle.es5.js",
-    "postinstall": "npm run build",
+    "prepublish": "npm run build",
     "start": "npm-run-all --parallel start:* watchify",
     "start:async": "budo test/e2e/async.js --live --open -- --plugin tsify",
     "start:async-using-es5-dist": "npm run build && budo test/e2e/async-using-es5-dist.js --live --open",
@@ -34,6 +34,12 @@
   },
   "homepage": "https://github.com/ariutta/yolk-simple-modal",
   "dependencies": {
+    "lodash": "^4.11.1",
+    "simple-modal": "^1.0.1",
+    "spin.js": "^2.0.2",
+    "yolk": "^0.10.1"
+  },
+  "devDependencies": {
     "brfs": "^1.4.3",
     "browserify": "^12.0.1",
     "browserify-derequire": "^0.9.4",
@@ -45,15 +51,8 @@
     "jade": "^1.11.0",
     "jade-runtime": "^2.0.0",
     "jadeify": "^4.5.0",
-    "lodash": "^4.11.1",
     "npm-run-all": "^1.8.0",
-    "rx": "^4.0.0",
-    "simple-modal": "^1.0.1",
-    "spin.js": "^2.0.2",
     "tsify": "^0.15.2",
-    "yolk": "^0.10.1"
-  },
-  "devDependencies": {
     "budo": "^8.2.2",
     "chai": "^3.5.0",
     "chai-as-promised": "~4.1.1",
@@ -73,10 +72,5 @@
     "typings": "^0.8.1",
     "watch": "^0.17.1",
     "watchify": "^3.0.0"
-  },
-  "browserify-shim": {
-    "rx": {
-      "exports": "global:Rx"
-    }
   }
 }
