@@ -14,3 +14,4 @@ demo/lib/
 gh-pages
 gh-pages/*
 !dist/
+!dist/*
